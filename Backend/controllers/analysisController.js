@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const { randomUUID } = require('crypto');
 
-// Configure multer for image uploads
 const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -25,7 +24,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (allowedMimes.includes(file.mimetype)) {
@@ -40,7 +39,6 @@ const History = require('../models/history.model');
 
 const normalizePrediction = (apiResponse, fallbackFilename) => {
   const probabilities = Array.isArray(apiResponse?.probabilities) ? apiResponse.probabilities : [];
-
   const disease = apiResponse?.disease || apiResponse?.prediction?.disease || apiResponse?.class_name || 'Unknown';
   const confidence = Number(apiResponse?.confidence ?? apiResponse?.prediction?.confidence ?? 0);
 
@@ -59,7 +57,6 @@ const normalizePrediction = (apiResponse, fallbackFilename) => {
 const analyzeWithFastAPI = async (filePath, fileName, mimeType) => {
   const formData = new FormData();
   const fileBuffer = fs.readFileSync(filePath);
-
   formData.append('file', new Blob([fileBuffer], { type: mimeType }), fileName);
 
   const MAX_RETRIES = 3;
@@ -111,7 +108,6 @@ exports.analyze = async (req, res) => {
       return res.status(400).json({ message: 'No image file provided' });
     }
 
-    // userId should come from verified JWT (set in req.user by middleware)
     const userId = req.user?.id || req.body.userId;
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
@@ -120,10 +116,8 @@ exports.analyze = async (req, res) => {
     const fastApiResult = await analyzeWithFastAPI(req.file.path, req.file.filename, req.file.mimetype);
     const prediction = normalizePrediction(fastApiResult, req.file.filename);
 
-    // Build image URL (served statically at /uploads)
     const imageUrl = `/uploads/${req.file.filename}`;
 
-    // Save history record to DB
     try {
       const historyItem = new History({
         userId,
@@ -138,10 +132,8 @@ exports.analyze = async (req, res) => {
       await historyItem.save();
     } catch (saveErr) {
       console.error('Failed to save history item:', saveErr);
-      // continue and still return prediction
     }
 
-    // Return prediction and meta
     res.json({
       success: true,
       analysisId: req.file.filename,

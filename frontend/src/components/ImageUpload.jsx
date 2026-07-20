@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import BackButton from './BackButton';
@@ -10,19 +10,17 @@ const ImageUpload = () => {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const abortControllerRef = useRef(null);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = useCallback((e) => {
     const file = e.target.files[0];
-    
     if (!file) return;
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError('File size must be less than 5MB');
       return;
     }
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please upload a valid image file');
       return;
@@ -31,17 +29,16 @@ const ImageUpload = () => {
     setImage(file);
     setError('');
 
-    // Create preview
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target.result);
+    reader.onload = (ev) => {
+      setPreview(ev.target.result);
     };
     reader.readAsDataURL(file);
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!image) {
       setError('Please select an image first');
       return;
@@ -50,14 +47,24 @@ const ImageUpload = () => {
     setLoading(true);
     setError('');
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     try {
       const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');
 
-      // Create FormData for image upload
       const formData = new FormData();
       formData.append('image', image);
       formData.append('userId', userId);
+
+      const timeoutId = setTimeout(() => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      }, 120000);
 
       const response = await fetch(`${API_BASE_URL}/analyze`, {
         method: 'POST',
@@ -65,20 +72,39 @@ const ImageUpload = () => {
           'Authorization': `Bearer ${token}`,
         },
         body: formData,
+        signal: abortControllerRef.current.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Analysis failed with status ${response.status}`);
+        const msg = errorData.message || '';
+
+        if (response.status === 503) {
+          throw new Error('The AI model is still loading. Please wait a moment and try again.');
+        }
+        if (response.status === 502) {
+          throw new Error('The AI prediction service is temporarily unavailable. Please try again shortly.');
+        }
+        if (response.status === 429) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
+        }
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('Session expired. Please log in again.');
+        }
+        throw new Error(msg || `Analysis failed (status ${response.status}). Please try again.`);
       }
 
       const result = await response.json();
-      
-      // Store result and navigate to results page
       localStorage.setItem('analysisResult', JSON.stringify(result));
       navigate('/results');
     } catch (err) {
-      setError(err.message || `Failed to analyze image. Check that the backend is running at ${API_BASE_URL}.`);
+      if (err.name === 'AbortError') {
+        setError('Request timed out. The AI service may be warming up. Please try again in a few moments.');
+      } else {
+        setError(err.message || 'Failed to analyze image. Please try again later.');
+      }
       console.error('Upload error:', err);
     } finally {
       setLoading(false);
@@ -87,7 +113,6 @@ const ImageUpload = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50">
-      {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
           <BackButton label="Back" fallbackPath="/dashboard" />
@@ -95,7 +120,6 @@ const ImageUpload = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Upload Skin Image</h2>
@@ -104,26 +128,28 @@ const ImageUpload = () => {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Error Message */}
             {error && (
-              <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                {error}
+              <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-start gap-3">
+                <span className="text-red-500 font-bold mt-0.5">!</span>
+                <div>
+                  <p className="font-medium">Analysis Error</p>
+                  <p className="text-sm mt-1">{error}</p>
+                </div>
               </div>
             )}
 
-            {/* Image Upload Area */}
-            <div className="border-2 border-dashed border-teal-300 rounded-lg p-12 text-center hover:border-teal-500 transition cursor-pointer"
-              onClick={() => document.getElementById('imageInput').click()}>
+            <div
+              className="border-2 border-dashed border-teal-300 rounded-lg p-12 text-center hover:border-teal-500 transition cursor-pointer"
+              onClick={() => document.getElementById('imageInput').click()}
+            >
               {preview ? (
                 <div className="space-y-4">
-                  <img 
-                    src={preview} 
-                    alt="Preview" 
+                  <img
+                    src={preview}
+                    alt="Preview"
                     className="max-h-80 mx-auto rounded-lg shadow-md"
                   />
-                  <p className="text-sm text-gray-600">
-                    {image?.name}
-                  </p>
+                  <p className="text-sm text-gray-600">{image?.name}</p>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -157,19 +183,17 @@ const ImageUpload = () => {
               />
             </div>
 
-            {/* Guidelines */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 className="font-bold text-blue-900 mb-3">For Best Results:</h3>
               <ul className="space-y-2 text-sm text-blue-800">
-                <li>✓ Use a clear, well-lit photo</li>
-                <li>✓ Show the entire affected area</li>
-                <li>✓ Keep the image in focus</li>
-                <li>✓ Avoid shadows or glare</li>
-                <li>✓ Use JPEG or PNG format</li>
+                <li>Use a clear, well-lit photo</li>
+                <li>Show the entire affected area</li>
+                <li>Keep the image in focus</li>
+                <li>Avoid shadows or glare</li>
+                <li>Use JPEG or PNG format</li>
               </ul>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={!image || loading}

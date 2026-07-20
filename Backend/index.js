@@ -16,26 +16,20 @@ const allowedOrigins = (process.env.CORS_ORIGINS || 'https://skindisease-fronten
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-// --- Middleware ---
-// CORS
 app.use(cors({
     origin: allowedOrigins,
 }));
 
-// Body parsing
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded images statically from /uploads
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// --- Routes ---
 app.use(API_PREFIX, authRoutes);
 app.use(API_PREFIX, historyRoutes);
 app.use(API_PREFIX, analysisRoutes);
 
-// --- Start server ---
 connectDB()
     .then(() => {
         app.listen(PORT, () => {
