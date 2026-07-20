@@ -7,6 +7,7 @@ import Results from './components/Results';
 import History from './components/History';
 import DiseaseInfo from './components/DiseaseInfo';
 import Home from './components/Home';
+import ForgotPassword from './components/ForgotPassword';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/upload" element={<ImageUpload />} />
       <Route path="/history" element={<History />} />

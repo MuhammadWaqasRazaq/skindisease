@@ -1,6 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-console.log("MONGO_URI =", process.env.MONGO_URI);
+
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 
 const connectDB = async () => {
