@@ -18,7 +18,7 @@ const API_PREFIX = '/api';
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'http://127.0.0.1:5173',
+        'https://skindisease-frontend.onrender.com',
     ],
 }));
 
