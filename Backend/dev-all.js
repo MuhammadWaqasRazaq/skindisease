@@ -22,9 +22,10 @@ function startProcess(name, command, args, cwd) {
   return child;
 }
 
-const backend = startProcess('backend', 'npm', ['run', 'dev'], 'Backend');
+const backend = startProcess('backend', 'npm', ['run', 'dev'], '.');
+const frontend = startProcess('frontend', 'npm', ['run', 'dev'], '..\\frontend');
 const fastapiPython = 'C:/Users/ss/Desktop/skn/.venv/Scripts/python.exe';
-const fastapi = startProcess('fastapi', fastapiPython, ['-m', 'uvicorn', 'model.app:app', '--host', '0.0.0.0', '--port', '8000', '--reload'], '.');
+const fastapi = startProcess('fastapi', fastapiPython, ['-m', 'uvicorn', 'model.app:app', '--host', '0.0.0.0', '--port', '8000', '--reload'], '..');
 
 function shutdown() {
   for (const child of processes) {
@@ -32,6 +33,7 @@ function shutdown() {
       child.kill();
     }
   }
+
   process.exit(0);
 }
 
@@ -39,6 +41,12 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 backend.on('close', (code) => {
+  if (code !== 0) {
+    shutdown();
+  }
+});
+
+frontend.on('close', (code) => {
   if (code !== 0) {
     shutdown();
   }

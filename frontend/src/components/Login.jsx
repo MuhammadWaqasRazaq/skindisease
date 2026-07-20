@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Activity } from 'lucide-react';
 import { login } from '../services/api';
+import BackButton from './BackButton';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -42,6 +43,9 @@ const Login = () => {
       {/* Left Side - Form Section */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 py-12">
         <div className="max-w-md w-full mx-auto">
+          <div className="mb-6">
+            <BackButton label="Back" fallbackPath="/" />
+          </div>
           {/* Logo/Brand Mobile */}
           <div className="flex items-center gap-2 mb-8 text-teal-600 font-bold text-2xl">
             <Activity className="h-8 w-8" />

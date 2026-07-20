@@ -107,8 +107,16 @@ async def predict(file: UploadFile = File(...)):
         confidence, predicted = torch.max(probabilities, 1)
 
     predicted_class = LABEL_NAMES[predicted.item()]
+    probability_scores = [
+        {
+            "disease": LABEL_NAMES[index],
+            "probability": round(probability.item(), 4),
+        }
+        for index, probability in enumerate(probabilities.squeeze(0))
+    ]
 
     return {
         "disease": predicted_class,
         "confidence": round(confidence.item() * 100, 2),
+        "probabilities": probability_scores,
     }

@@ -39,11 +39,13 @@ const History = require('../models/history.model');
 const normalizePrediction = (apiResponse, fallbackFilename) => {
   const prediction = apiResponse?.prediction || {};
   const probabilities = Array.isArray(apiResponse?.probabilities) ? apiResponse.probabilities : [];
+  const rawConfidence = prediction.confidence ?? apiResponse?.confidence ?? 0;
+  const normalizedConfidence = Number(rawConfidence) > 1 ? Number(rawConfidence) / 100 : Number(rawConfidence);
 
   return {
     prediction: {
-      disease: prediction.disease || apiResponse?.class_name || 'Unknown',
-      confidence: Number(prediction.confidence ?? apiResponse?.confidence ?? 0),
+      disease: prediction.disease || apiResponse?.disease || apiResponse?.class_name || apiResponse?.label || 'Unknown',
+      confidence: Number.isFinite(normalizedConfidence) ? normalizedConfidence : 0,
     },
     probabilities,
     details: apiResponse?.details || apiResponse?.message || `Analysis completed for ${fallbackFilename}.`,

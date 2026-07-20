@@ -21,5 +21,7 @@ const authenticateTokenMiddleware = (req, res, next) => {
 
 router.get('/history', authenticateTokenMiddleware, historyController.getHistory);
 router.post('/history', authenticateTokenMiddleware, historyController.saveHistory);
+router.delete('/history/:id', authenticateTokenMiddleware, historyController.deleteHistoryItem);
+router.delete('/history', authenticateTokenMiddleware, historyController.deleteAllHistory);
 
 module.exports = router;

@@ -221,6 +221,35 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
+
+        <footer className="mt-16 rounded-2xl border border-teal-500 bg-teal-600 p-8 shadow-lg shadow-teal-200/40 md:p-10">
+          <div className="grid gap-8 md:grid-cols-3 md:items-start">
+            <div className="md:col-span-1">
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-teal-100">Project Footer</p>
+              <h3 className="mt-3 text-3xl font-bold text-white">DermaDetect</h3>
+              <p className="mt-4 max-w-md text-base leading-7 text-teal-50">
+                AI-powered skin disease analysis and reference guides designed to support faster screening, better awareness, and clearer next steps.
+              </p>
+            </div>
+
+            <div>
+              <p className="text-lg font-semibold text-white">What it does</p>
+              <ul className="mt-4 space-y-3 text-base text-teal-50">
+                <li>• Upload skin images for instant AI analysis</li>
+                <li>• Review prediction results and confidence scores</li>
+                <li>• Save and manage analysis history</li>
+              </ul>
+            </div>
+
+            <div className="md:text-right">
+              <p className="text-lg font-semibold text-white">Project Note</p>
+              <p className="mt-4 text-base leading-7 text-teal-50">
+                Built for early skin condition awareness and tracking.
+              </p>
+              <p className="mt-6 text-sm font-medium uppercase tracking-[0.2em] text-teal-100">© 2026 DermaDetect</p>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );

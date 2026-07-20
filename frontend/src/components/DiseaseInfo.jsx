@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import diseaseData from '../data/diseaseData';
+import BackButton from './BackButton';
 
 const Badge = ({ children }) => (
   <span className="inline-block bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">{children}</span>
@@ -15,6 +16,9 @@ const DiseaseInfo = () => {
     return (
       <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 p-8">
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow p-8 text-center">
+          <div className="mb-6 flex justify-start">
+            <BackButton label="Back" fallbackPath="/home" />
+          </div>
           <h2 className="text-2xl font-bold mb-4">Information Not Found</h2>
           <p className="text-gray-600 mb-6">We don't have structured content for "{decodedName}" yet. Try a different condition or return to the results page.</p>
           <div className="flex justify-center gap-4">
@@ -29,6 +33,9 @@ const DiseaseInfo = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-white to-teal-50 py-12">
       <div className="max-w-5xl mx-auto grid gap-8 grid-cols-1 md:grid-cols-3 px-4">
+        <div className="md:col-span-3 mb-2 flex justify-start">
+          <BackButton label="Back" fallbackPath="/home" />
+        </div>
         {/* Left image */}
         <div className="md:col-span-1 bg-white rounded-lg shadow overflow-hidden">
           <img src={data.image} alt={data.title} className="w-full h-64 object-cover" />

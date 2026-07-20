@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Activity } from 'lucide-react';
 import { signup } from '../services/api';
+import BackButton from './BackButton';
 
 const Signup = () => {
 
@@ -87,6 +88,9 @@ const Signup = () => {
       {/* Left Side - Form Section */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 py-12">
         <div className="max-w-md w-full mx-auto">
+          <div className="mb-6">
+            <BackButton label="Back" fallbackPath="/login" />
+          </div>
           <div className="flex items-center gap-2 mb-8 text-teal-600 font-bold text-2xl">
              <Activity className="h-8 w-8" />
              <span>DermaDetect</span>

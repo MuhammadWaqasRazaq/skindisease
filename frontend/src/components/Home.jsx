@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import diseaseData from '../data/diseaseData';
+import BackButton from './BackButton';
 
 export default function Home() {
   const entries = Object.entries(diseaseData);
@@ -7,6 +8,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <div className="mb-6">
+          <BackButton label="Back" fallbackPath="/dashboard" />
+        </div>
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Skin Conditions & Guides</h1>
           <p className="mt-2 text-gray-600">Learn about common skin conditions, symptoms, precautions and treatments.</p>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, ArrowLeft } from 'lucide-react';
+import { Upload } from 'lucide-react';
+import BackButton from './BackButton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
@@ -68,8 +69,8 @@ const ImageUpload = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Analysis failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Analysis failed with status ${response.status}`);
       }
 
       const result = await response.json();
@@ -78,7 +79,7 @@ const ImageUpload = () => {
       localStorage.setItem('analysisResult', JSON.stringify(result));
       navigate('/results');
     } catch (err) {
-      setError(err.message || 'Failed to analyze image. Please try again.');
+      setError(err.message || `Failed to analyze image. Check that the backend is running at ${API_BASE_URL}.`);
       console.error('Upload error:', err);
     } finally {
       setLoading(false);
@@ -90,13 +91,7 @@ const ImageUpload = () => {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back
-          </button>
+          <BackButton label="Back" fallbackPath="/dashboard" />
           <h1 className="text-2xl font-bold text-gray-900">Skin Disease Analysis</h1>
         </div>
       </header>

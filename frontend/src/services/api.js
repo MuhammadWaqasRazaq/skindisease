@@ -66,3 +66,49 @@ export const getHistory = async () => {
     throw error;
   }
 };
+
+export const deleteHistoryItem = async (historyId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/history/${historyId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete history item');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('deleteHistoryItem error:', error);
+    throw error;
+  }
+};
+
+export const deleteAllHistory = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/history`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete history');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('deleteAllHistory error:', error);
+    throw error;
+  }
+};
