@@ -9,7 +9,7 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000';
+const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'https://skindisease-pvfo.onrender.com';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
