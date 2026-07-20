@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
-const BackButton = ({ label = 'Back', fallbackPath = '/dashboard', className = '' }) => {
+const BackButton = ({ label = 'Back', fallbackPath = '/', className = '' }) => {
   const navigate = useNavigate();
 
   const handleBack = () => {

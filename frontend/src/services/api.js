@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://skindisease-backend-11fq.onrender.com';
+import { API_BASE_URL } from '../config/api';
 
 export const signup = async (fullName, email, password) => {
   try {

@@ -2,7 +2,6 @@ require('dotenv').config({ debug: true });
 
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
@@ -12,20 +11,20 @@ const analysisRoutes = require('./routes/analysisRoutes');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const API_PREFIX = '/api';
+const allowedOrigins = (process.env.CORS_ORIGINS || 'https://skindisease-frontend.onrender.com,http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 // --- Middleware ---
 // CORS
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'https://skindisease-frontend.onrender.com',
-    ],
+    origin: allowedOrigins,
 }));
 
-// Body parsing MUST come BEFORE routes
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse form data
-app.use(bodyParser.json({ limit: '5mb' })); // For large JSON payloads
+// Body parsing
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded images statically from /uploads
 const path = require('path');

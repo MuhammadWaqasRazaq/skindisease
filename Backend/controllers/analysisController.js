@@ -11,6 +11,8 @@ if (!fs.existsSync(uploadDir)) {
 
 const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'https://skindisease-pvfo.onrender.com';
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -37,15 +39,15 @@ const upload = multer({
 const History = require('../models/history.model');
 
 const normalizePrediction = (apiResponse, fallbackFilename) => {
-  const prediction = apiResponse?.prediction || {};
   const probabilities = Array.isArray(apiResponse?.probabilities) ? apiResponse.probabilities : [];
-  const rawConfidence = prediction.confidence ?? apiResponse?.confidence ?? 0;
-  const normalizedConfidence = Number(rawConfidence) > 1 ? Number(rawConfidence) / 100 : Number(rawConfidence);
+
+  const disease = apiResponse?.disease || apiResponse?.prediction?.disease || apiResponse?.class_name || 'Unknown';
+  const confidence = Number(apiResponse?.confidence ?? apiResponse?.prediction?.confidence ?? 0);
 
   return {
     prediction: {
-      disease: prediction.disease || apiResponse?.disease || apiResponse?.class_name || apiResponse?.label || 'Unknown',
-      confidence: Number.isFinite(normalizedConfidence) ? normalizedConfidence : 0,
+      disease,
+      confidence,
     },
     probabilities,
     details: apiResponse?.details || apiResponse?.message || `Analysis completed for ${fallbackFilename}.`,
@@ -60,27 +62,45 @@ const analyzeWithFastAPI = async (filePath, fileName, mimeType) => {
 
   formData.append('file', new Blob([fileBuffer], { type: mimeType }), fileName);
 
-  let response;
-  try {
-    response = await fetch(`${FASTAPI_BASE_URL}/predict`, {
-      method: 'POST',
-      body: formData,
-    });
-  } catch (error) {
-    if (error?.cause?.code === 'ECONNREFUSED') {
-      throw new Error(`FastAPI service is not running at ${FASTAPI_BASE_URL}. Start it with the project dev launcher or run uvicorn model.app:app on port 8000.`);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY_MS = 5000;
+  let lastError;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    let response;
+    try {
+      response = await fetch(`${FASTAPI_BASE_URL}/predict`, {
+        method: 'POST',
+        body: formData,
+        signal: AbortSignal.timeout(60000),
+      });
+    } catch (error) {
+      lastError = error;
+      if (error?.cause?.code === 'ECONNREFUSED' || error.name === 'TimeoutError' || error.name === 'AbortError') {
+        console.warn(`FastAPI attempt ${attempt}/${MAX_RETRIES} failed: ${error.message}. Retrying...`);
+        if (attempt < MAX_RETRIES) await sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      throw new Error(`Failed to contact FastAPI service at ${FASTAPI_BASE_URL}: ${error.message}`);
     }
 
-    throw new Error(`Failed to contact FastAPI service at ${FASTAPI_BASE_URL}: ${error.message}`);
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const detail = payload?.detail || payload?.message || `HTTP ${response.status}`;
+      lastError = new Error(`FastAPI prediction failed: ${detail}`);
+      console.warn(`FastAPI attempt ${attempt}/${MAX_RETRIES} returned ${response.status}: ${detail}`);
+      if (attempt < MAX_RETRIES) {
+        await sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      break;
+    }
+
+    return payload;
   }
 
-  const payload = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(payload?.detail || payload?.message || 'FastAPI prediction failed');
-  }
-
-  return payload;
+  throw lastError || new Error('FastAPI prediction failed after multiple retries');
 };
 
 exports.upload = upload;

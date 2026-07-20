@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import BackButton from './BackButton';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+import { API_BASE_URL } from '../config/api';
 
 const ImageUpload = () => {
   const navigate = useNavigate();

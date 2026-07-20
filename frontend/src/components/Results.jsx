@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import diseaseData from '../data/diseaseData';
 import BackButton from './BackButton';
+import { buildBackendAssetUrl } from '../config/api';
 
 const Results = () => {
   const navigate = useNavigate();
@@ -269,7 +270,7 @@ const Results = () => {
                 <div className="w-full overflow-hidden rounded-lg bg-gray-100">
                   {result?.imageUrl ? (
                     <img
-                      src={result.imageUrl.startsWith('http') ? result.imageUrl : `http://localhost:3001${result.imageUrl}`}
+                      src={buildBackendAssetUrl(result.imageUrl)}
                       alt={getDiseaseName()}
                       className="h-72 w-full object-cover"
                     />

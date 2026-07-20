@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getHistory, deleteHistoryItem, deleteAllHistory } from '../services/api';
 import diseaseData from '../data/diseaseData';
 import BackButton from './BackButton';
+import { buildBackendAssetUrl } from '../config/api';
 
 const History = () => {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ const History = () => {
           <div key={item._id || item.id} className="bg-white rounded-lg shadow p-4 flex gap-4">
             <div className="w-32 h-32 bg-gray-100 rounded overflow-hidden shrink-0">
               {item.imageUrl ? (
-                <img src={`http://localhost:3001${item.imageUrl}`} alt={item.diseaseName} className="w-full h-full object-cover" />
+                <img src={buildBackendAssetUrl(item.imageUrl)} alt={item.diseaseName} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
               )}
@@ -137,7 +138,7 @@ const History = () => {
                 <button
                   onClick={() => {
                     // download image or open in new tab
-                    if (item.imageUrl) window.open(`http://localhost:3001${item.imageUrl}`, '_blank');
+                    if (item.imageUrl) window.open(buildBackendAssetUrl(item.imageUrl), '_blank');
                   }}
                   className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
                 >
