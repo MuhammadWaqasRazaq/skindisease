@@ -1,0 +1,68 @@
+const API_BASE_URL = 'http://localhost:3001/api';
+
+export const signup = async (fullName, email, password) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fullName, email, password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Signup failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Signup error:', error);
+    throw error;
+  }
+};
+
+export const login = async (email, password) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Login failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
+};
+
+export const getHistory = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/history`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch history');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('getHistory error:', error);
+    throw error;
+  }
+};
